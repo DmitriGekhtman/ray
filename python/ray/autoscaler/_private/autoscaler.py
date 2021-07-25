@@ -302,10 +302,6 @@ class StandardAutoscaler:
                     if updater.update_time:
                         self.prom_metrics.worker_update_time.observe(
                             updater.update_time)
-                    # Mark the node as active to prevent the node recovery
-                    # logic immediately trying to restart Ray on the new node.
-                    self.load_metrics.mark_active(
-                        self.provider.internal_ip(node_id))
                 else:
                     failed_nodes.append(node_id)
                     self.num_failed_updates[node_id] += 1
@@ -658,16 +654,24 @@ class StandardAutoscaler:
     def heartbeat_on_time(self, node_id: NodeID, now: float) -> bool:
         """Determine whether we've received a heartbeat from a node within the
         last AUTOSCALER_HEARTBEAT_TIMEOUT_S seconds.
+
+        If we've never received a heartbeat from the node, it means the node
+        is newly launched and has not had time to produce a heartbeat;
+        thus we mark the heartbeat time as now and consider the heartbeat on
+        time.
         """
         key = self.provider.internal_ip(node_id)
 
         if key in self.load_metrics.last_heartbeat_time_by_ip:
             last_heartbeat_time = self.load_metrics.last_heartbeat_time_by_ip[
                 key]
-            delta = now - last_heartbeat_time
-            if delta < AUTOSCALER_HEARTBEAT_TIMEOUT_S:
-                return True
-        return False
+        else:
+            # We haven't received a heartbeat yet; consider heartbeat on time.
+            last_heartbeat_time = now
+            # Insert an entry in the dict of heartbeat times.
+            self.load_metrics.mark_active(key)
+        delta = now - last_heartbeat_time
+        return (delta < AUTOSCALER_HEARTBEAT_TIMEOUT_S)
 
     def terminate_unhealthy_nodes(self, nodes: List[NodeID], now: float):
         """Terminate nodes for which we haven't received a heartbeat on time.
