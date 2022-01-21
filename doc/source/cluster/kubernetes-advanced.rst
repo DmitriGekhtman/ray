@@ -148,15 +148,15 @@ When cleaning up,
 This is because the Operator must remove a `finalizer`_ from the ``RayCluster`` resource to allow
 deletion of the resource to complete.
 
-If the Operator and ``RayCluster`` are created as part of the same Helm release,
-the ``RayCluster`` must be deleted :ref:`before<k8s-cleanup-basic>` uninstalling the Helm release.
-If the Operator and one or more ``RayClusters`` are created in multiple Helm releases,
-the ``RayCluster`` releases must be uninstalled before the Operator release.
+- If the Operator and ``RayCluster`` are created as part of the same Helm release, the ``RayCluster`` must be deleted :ref:`before<k8s-cleanup-basic>` uninstalling the Helm release.
+- If the Operator and one or more ``RayClusters`` are created in multiple Helm releases, the ``RayCluster`` releases must be uninstalled before the Operator release.
+- If the Operator manages several RayClusters in the same namespace, the RayClusters must be deleted before deleting the namespace.
 
 To remedy a situation where the Operator deployment was deleted first and ``RayCluster`` deletion is hanging, try one of the following:
 
 - Manually delete the ``RayCluster``'s finalizers with ``kubectl edit`` or ``kubectl patch``.
 - Restart the Operator so that it can remove ``RayCluster`` finalizers. Then remove the Operator.
+
 
 Cluster-scoped vs. namespaced operators
 ---------------------------------------
