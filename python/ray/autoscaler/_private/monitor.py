@@ -141,6 +141,7 @@ class Monitor:
                  stop_event: Optional[Event] = None):
         if not use_gcs_for_bootstrap():
             # Initialize the Redis clients.
+            logger.info("No Redis! Does the autoscaler work?")
             redis_address = address
             self.redis = ray._private.services.create_redis_client(
                 redis_address, password=redis_password)
