@@ -81,7 +81,7 @@ def _derive_autoscaling_config_from_ray_cr(ray_cr: Dict[str, Any]) -> Dict[str, 
         "idle_timeout_minutes": 5,
         # Should consider exposing `upscalingSpeed` in the RayCluster CRD,
         # under an `autoscaling` field.
-        "upscaling_speed": 1,
+        "upscaling_speed": 10000000000,
         **legacy_autoscaling_fields,
     }
 
