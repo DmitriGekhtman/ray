@@ -597,7 +597,8 @@ def _get_tpu_chip_type(
         # Prevent the autoscaler from attempting to directly terminate this node type.
         "max_workers": 100000000000000,
         "resources": {"TPU": 1},
-        # Not relevant, since we're using this node type for book-keeping, not node launching.
+        # Not relevant, since we're using this node type for book-keeping,
+        # not to launch nodes.
         "node_config": {},
     }
     return tpu_chip_type_name, tpu_node_type

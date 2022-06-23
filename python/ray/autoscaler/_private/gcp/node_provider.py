@@ -120,7 +120,9 @@ class GCPNodeProvider(NodeProvider):
                 num_tpus = self._num_tpus_from_instance(i)
                 if num_tpus > 1:
                     for tpu_index in range(num_tpus):
-                        tpu_node_name = self._add_tpu_chip_suffix(instance_name, tpu_index)
+                        tpu_node_name = self._add_tpu_chip_suffix(
+                            instance_name, tpu_index
+                        )
                         node_names.append(tpu_node_name)
                 else:
                     node_names.append(instance_name)
@@ -172,7 +174,9 @@ class GCPNodeProvider(NodeProvider):
                 node = self._get_cached_node(node_id)
                 return node.get_labels()
 
-    def _get_tags_for_tpu_chip(self, labels: Dict[str, str], tpu_index) -> Dict[str, str]:
+    def _get_tags_for_tpu_chip(
+        self, labels: Dict[str, str], tpu_index
+    ) -> Dict[str, str]:
         tags: Dict[str, str] = {}
         for key in labels:
             tag_key, index = self._name_and_tpu_index(key)
@@ -185,7 +189,10 @@ class GCPNodeProvider(NodeProvider):
         with self.lock:
             if self._is_tpu_chip(node_id):
                 node_id, tpu_index = self._name_and_tpu_index(node_id)
-                labels = {f"{self._add_tpu_chip_suffix(key, tpu_index)}": value for key, value in tags.items()}
+                labels = {
+                    f"{self._add_tpu_chip_suffix(key, tpu_index)}": value
+                    for key, value in tags.items()
+                }
             else:
                 labels = tags
 
@@ -241,7 +248,9 @@ class GCPNodeProvider(NodeProvider):
         tag key dash a numeric suffix.
         """
         return {
-            f"{self._add_tpu_chip_suffix(key, tpu_index)}": value for key, value in tags.items() for tpu_index in range(num_tpus)
+            f"{self._add_tpu_chip_suffix(key, tpu_index)}": value
+            for key, value in tags.items()
+            for tpu_index in range(num_tpus)
         }
 
     @_retry

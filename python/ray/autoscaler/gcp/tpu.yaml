@@ -40,7 +40,8 @@ provider:
     type: gcp
     region: us-central1
     availability_zone: us-central1-b
-    project_id: dmitri-test-300222  # replace with your GCP project id
+    # project_id: dmitri-test-300222  # replace with your GCP project id
+    project_id: null
 
 setup_commands: []
 
