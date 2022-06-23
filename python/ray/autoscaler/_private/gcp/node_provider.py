@@ -256,6 +256,9 @@ class GCPNodeProvider(NodeProvider):
     @_retry
     def terminate_node(self, node_id: str):
         with self.lock:
+            if self._is_tpu_chip(node_id):
+                # Kill the parent instance instead.
+                node_id, _ = self._name_and_tpu_index(node_id)
             resource = self._get_resource_depending_on_node_name(node_id)
             try:
                 result = resource.delete_instance(

@@ -563,6 +563,8 @@ def _hack_in_tpu_chip_type(config: Dict[str, Any]) -> Dict[str, Any]:
                 node_type_name, node_type
             )
             available_node_types[tpu_chip_type_name] = tpu_chip_type
+    # Idle downscaling not supported!
+    config["idle_timeout_minutes"] = 1000000000
     return config
 
 
@@ -602,9 +604,8 @@ def _get_tpu_chip_type(
         # Prevent the autoscaler from attempting to directly terminate this node type.
         "max_workers": 100000000000000,
         "resources": {"TPU": 1},
-        # Not relevant, since we're using this node type for book-keeping,
-        # not to launch nodes.
-        "node_config": {},
+        # Copy parent type's config for this hack.
+        "node_config": tpu_node_type["node_config"],
     }
     return tpu_chip_type_name, tpu_chip_type
 

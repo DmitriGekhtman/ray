@@ -11,6 +11,7 @@ cluster_name: tputest
 # node.
 max_workers: 7
 
+
 available_node_types:
     ray_head_default:
         resources: {"CPU": 2}

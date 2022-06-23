@@ -156,7 +156,7 @@ class GCPNode(UserDict, metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def get_internal_ip(self) -> str:
+    def get_internal_ip(self, index: int = 0) -> str:
         return
 
     def __repr__(self) -> str:
@@ -185,7 +185,6 @@ class GCPComputeNode(GCPNode):
         if index < len(network_interfaces) - 1:
             return self.get("networkInterfaces", [{}])[index].get("networkIP")
         else:
-            logger.warning("Went out of bounds trying to get internal ip!!")
             return None
 
     # netWorkerEndpoints[*]["ipAddress"]
