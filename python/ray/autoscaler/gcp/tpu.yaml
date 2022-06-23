@@ -62,6 +62,7 @@ head_setup_commands:
   - python -m pip install --upgrade fabric dataclasses optax==0.0.6 git+https://github.com/deepmind/dm-haiku google-api-python-client cryptography tensorboardX ray[default]
   - python -m pip install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-3.0.0.dev0-cp38-cp38-manylinux2014_x86_64.whl
   - git clone https://github.com/Yard1/swarm-jax.git && cd swarm-jax && python -m pip install .
+  - git clone -b dmitri/tpu-pod https://github.com/DmitriGekhtman/ray.git && push ray/python/ray && python setup-dev.py -y && popd
 
 # Install Jax and other dependencies on TPU
 worker_setup_commands:
