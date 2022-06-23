@@ -293,7 +293,6 @@ def bootstrap_gcp(config):
     config = _configure_subnet(config, compute)
     config = _hack_in_tpu_chip_type(config)
 
-
     return config
 
 
