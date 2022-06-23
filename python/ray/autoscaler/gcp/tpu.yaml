@@ -77,3 +77,14 @@ worker_setup_commands:
   - python3 -c "import jax; jax.device_count(); jax.numpy.add(1, 1)"  # test if Jax has been installed correctly
   - pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-3.0.0.dev0-cp38-cp38-manylinux2014_x86_64.whl
   - git clone https://github.com/Yard1/swarm-jax.git && cd swarm-jax && sudo pip3 install .
+
+head_start_ray_commands:
+    - ray stop
+    - >-
+      ulimit -n 65536;
+      ray start
+      --head
+      --port=6379
+      --object-manager-port=8076
+      --autoscaling-config=~/ray_bootstrap_config.yaml
+
