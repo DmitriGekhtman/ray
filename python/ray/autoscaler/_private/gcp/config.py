@@ -292,9 +292,7 @@ def bootstrap_gcp(config):
     config = _configure_key_pair(config, compute)
     config = _configure_subnet(config, compute)
     config = _hack_in_tpu_chip_type(config)
-    import pdb
 
-    pdb.set_trace()
 
     return config
 
