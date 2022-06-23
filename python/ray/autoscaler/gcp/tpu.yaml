@@ -57,7 +57,6 @@ head_setup_commands:
   # Two first lines are a workaround for ssh timing out
   - sleep 2
   - sleep 2
-  - echo diff
   - sudo chown -R $(whoami) /opt/conda/*
   - conda activate ray || conda create -y -n "ray" python=3.8.5
   - echo 'conda activate ray' >> ~/.bashrc
