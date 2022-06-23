@@ -555,6 +555,9 @@ def _hack_in_tpu_chip_type(config: Dict[str, Any]) -> Dict[str, Any]:
         num_tpus = num_tpus_from_node_config(node_type.get("node_config"))
         if num_tpus > 0:
             available_node_types[node_type_name]["resources"]["TPU"] = num_tpus
+            # Hacks, don't mind me.
+            available_node_types[node_type_name]["min_workers"] = 0
+            available_node_types[node_type_name]["max_workers"] = 0
         if num_tpus > 1:
             tpu_chip_type_name, tpu_chip_type = _get_tpu_chip_type(
                 node_type_name, node_type
@@ -593,9 +596,9 @@ def _get_tpu_chip_type(
 ) -> Tuple[str, Dict[str, Any]]:
     """Get a virtual type node type, used for autoscaler book-keeping."""
     tpu_chip_type_name = f"{tpu_instance_type_name}-chip"
-    tpu_node_type = {
-        # Prevent the autoscaler from trying to directly launch this node type.
-        "min_workers": 0,
+    tpu_chip_type = {
+        # Pure hackery, don't mind me.
+        "min_workers": tpu_node_type["min_workers"],
         # Prevent the autoscaler from attempting to directly terminate this node type.
         "max_workers": 100000000000000,
         "resources": {"TPU": 1},
@@ -603,7 +606,7 @@ def _get_tpu_chip_type(
         # not to launch nodes.
         "node_config": {},
     }
-    return tpu_chip_type_name, tpu_node_type
+    return tpu_chip_type_name, tpu_chip_type
 
 
 def _list_subnets(config, compute):
