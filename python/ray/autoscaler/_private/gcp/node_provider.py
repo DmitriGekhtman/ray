@@ -28,7 +28,7 @@ from ray.autoscaler.node_provider import NodeProvider
 
 logger = logging.getLogger(__name__)
 
-TPUCHIP = "TPUCHIP"
+TPUCHIP = "tpuchip"
 
 
 def _retry(method, max_tries=5, backoff_s=1):
