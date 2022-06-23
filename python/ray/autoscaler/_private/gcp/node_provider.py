@@ -136,7 +136,7 @@ class GCPNodeProvider(NodeProvider):
         components = suffixed_name.split("-")
         assert components[-2] == TPUCHIP, components
         assert components[-1].isnumeric(), components
-        return components[-3], int(components[-1]), components
+        return components[-3], int(components[-1])
 
     def _is_tpu_chip(self, node_name):
         return TPUCHIP in node_name
