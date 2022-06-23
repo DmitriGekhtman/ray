@@ -59,7 +59,8 @@ head_setup_commands:
   - conda activate ray && echo 'conda activate ray' >> ~/.bashrc
   - python -m pip install --upgrade pip
   - python -m pip install --upgrade "jax[cpu]==0.2.14"
-  - git clone -b dmitri/tpu-pod https://github.com/DmitriGekhtman/ray.git && pushd ray/python/ray && python setup-dev.py -y && popd
+  - git clone -b dmitri/tpu-pod https://github.com/DmitriGekhtman/ray.git || echo ok
+  - pushd ray/python/ray && python setup-dev.py -y && popd
 
 # Install Jax and other dependencies on TPU
 worker_setup_commands:
