@@ -5,7 +5,7 @@
 #   ray attach tpu.yaml swarm_tpu_jax.py swarm-jax/data/enwik8 [NUM_TPUS] [EPOCHS]
 
 # A unique identifier for the head node and workers of this cluster.
-cluster_name: tputest
+cluster_name: hackhacktputest
 
 # The maximum number of worker nodes to launch in addition to the head
 # node.
@@ -35,14 +35,14 @@ available_node_types:
             runtimeVersion: v2-alpha
             schedulingConfig:
                 # Set to false to use non-preemptible TPUs
-                preemptible: true
+                preemptible: false
 
 provider:
     type: gcp
     region: us-central1
     availability_zone: us-central1-a
-    project_id: dmitri-test-300222  # replace with your GCP project id
-    #project_id: null
+    project_id: hidden-cosmos-347615  # replace with your GCP project id
+    cache_stopped_nodes: False
     foreground_node_launch: true
 
 setup_commands: []
@@ -57,7 +57,6 @@ head_setup_commands:
   # Two first lines are a workaround for ssh timing out
   - sleep 2
   - sleep 2
-  - echo a
   - sudo chown -R $(whoami) /opt/conda/*
   - conda activate ray || conda create -y -n "ray" python=3.8.5
   - echo 'conda activate ray' >> ~/.bashrc
