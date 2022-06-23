@@ -550,6 +550,8 @@ def _hack_in_tpu_chip_type(config: Dict[str, Any]) -> Dict[str, Any]:
     available_node_types = config["available_node_types"]
     for node_type_name, node_type in copy.deepcopy(available_node_types).items():
         num_tpus = num_tpus_from_node_config(node_type.get("node_config"))
+        if num_tpus > 0:
+            available_node_types[node_type]["resources"]["TPU"] = num_tpus
         if num_tpus > 1:
             tpu_chip_type_name, tpu_chip_type = _get_tpu_chip_type(
                 node_type_name, node_type
