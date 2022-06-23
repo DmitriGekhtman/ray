@@ -292,6 +292,9 @@ def bootstrap_gcp(config):
     config = _configure_key_pair(config, compute)
     config = _configure_subnet(config, compute)
     config = _hack_in_tpu_chip_type(config)
+    import pdb
+
+    pdb.set_trace()
 
     return config
 
@@ -565,8 +568,7 @@ def num_tpus_from_node_config(node_type: Dict[str, Any]) -> int:
 
     Return 0 if it's not a TPU type or parsing the number of TPUs failed.
     """
-    node_config = node_type.get("node_config", {})
-    accelerator_type = node_config.get("acceleratorType", "")
+    accelerator_type = node_type.get("acceleratorType", "")
     return num_tpus_from_accelerator_type(accelerator_type)
 
 

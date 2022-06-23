@@ -40,8 +40,8 @@ provider:
     type: gcp
     region: us-central1
     availability_zone: us-central1-b
-    # project_id: dmitri-test-300222  # replace with your GCP project id
-    project_id: null
+    project_id: dmitri-test-300222  # replace with your GCP project id
+    #project_id: null
 
 setup_commands: []
 
@@ -65,6 +65,7 @@ head_setup_commands:
   - git clone -b hackathon/tpu_pod https://github.com/DmitriGekhtman/ray
   - python ray/python/ray/setup-dev.py -y
   - pip install google-api-python-client==1.7.8
+  - pip install cryptography>=3.0.0
 
 # Install Jax and other dependencies on TPU
 worker_setup_commands:

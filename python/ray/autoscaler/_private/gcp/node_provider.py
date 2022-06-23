@@ -127,7 +127,7 @@ class GCPNodeProvider(NodeProvider):
                 else:
                     node_names.append(instance_name)
 
-            return [i["name"] for i in instances]
+            return node_names
 
     def _add_tpu_chip_suffix(self, name, tpu_index) -> str:
         return f"{name}-{TPUCHIP}-{tpu_index}"
