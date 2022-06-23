@@ -241,7 +241,7 @@ class GCPNodeProvider(NodeProvider):
         tag key dash a numeric suffix.
         """
         return {
-            f"{self._add_tpu_chip_suffix(key, tpu_index=)}": value for key, value in tags.items() for tpu_index in range(num_tpus)
+            f"{self._add_tpu_chip_suffix(key, tpu_index)}": value for key, value in tags.items() for tpu_index in range(num_tpus)
         }
 
     @_retry
