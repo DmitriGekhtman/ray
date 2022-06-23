@@ -63,6 +63,7 @@ head_setup_commands:
   - rm -rf ray || echo ok
   - git clone -b hackathon/tpu_pod https://github.com/DmitriGekhtman/ray
   - python ray/python/ray/setup-dev.py -y
+  - pip install google-api-python-client==1.7.8
 
 # Install Jax and other dependencies on TPU
 worker_setup_commands:
