@@ -182,7 +182,7 @@ class GCPComputeNode(GCPNode):
 
     def get_internal_ip(self, index=0) -> str:
         network_interfaces = self.get("networkInterfaces", [{}])
-        if index < len(network_interfaces) - 1:
+        if index < len(network_interfaces):
             return self.get("networkInterfaces", [{}])[index].get("networkIP")
         else:
             return None
