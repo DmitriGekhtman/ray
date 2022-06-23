@@ -134,9 +134,10 @@ class GCPNodeProvider(NodeProvider):
 
     def _name_and_tpu_index(self, suffixed_name) -> Tuple[str, int]:
         components = suffixed_name.split("-")
-        assert components[-2] == TPUCHIP, components
-        assert components[-1].isnumeric(), components
-        return "-".join(components[:-2]), int(components[-1])
+        if components[-2] == TPUCHIP and components[-1].isnumeric():
+            return "-".join(components[:-2]), int(components[-1])
+        else:
+            return "", -1
 
     def _is_tpu_chip(self, node_name):
         return TPUCHIP in node_name
@@ -179,6 +180,9 @@ class GCPNodeProvider(NodeProvider):
         tags: Dict[str, str] = {}
         for key in labels:
             tag_key, index = self._name_and_tpu_index(key)
+            if tag_key == "":
+                # Mis-formatted key.
+                continue
             if index == tpu_index:
                 tags[tag_key] = labels[key]
         return tags
