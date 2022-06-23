@@ -142,9 +142,8 @@ class GCPNodeProvider(NodeProvider):
         return TPUCHIP in node_name
 
     def _num_tpus_from_instance(self, instance) -> int:
-        accelerators = instance.get("guestAccelerators", [])
-        if accelerators:
-            accelerator_type = accelerators[0].get("acceleratorType", "")
+        accelerator_type = instance.get("AcceleratorType")
+        if accelerator_type:
             return num_tpus_from_accelerator_type(accelerator_type)
         else:
             return 0
