@@ -25,8 +25,8 @@ available_node_types:
                   # See https://cloud.google.com/compute/docs/images for more images
                   sourceImage: projects/deeplearning-platform-release/global/images/family/common-cpu
     ray_tpu:
-        min_workers: 7
-        resources: {"TPU": 1}  # use TPU custom resource in your code
+        min_workers: 0
+        resources: {"TPU": 4}  # use TPU custom resource in your code
         node_config:
             # Only v2-8 and v3-8 accelerator types are currently supported.
             # Support for TPU pods will be added in the future.
