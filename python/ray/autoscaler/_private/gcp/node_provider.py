@@ -133,10 +133,10 @@ class GCPNodeProvider(NodeProvider):
         return f"{name}-{TPUCHIP}-{tpu_index}"
 
     def _name_and_tpu_index(self, suffixed_name) -> Tuple[str, int]:
-        components = suffixed_name.strip("-")
+        components = suffixed_name.split("-")
         assert components[-2] == TPUCHIP, components
-        assert components[-1].isnumeric()
-        return components[-3], int(components[-1])
+        assert components[-1].isnumeric(), components
+        return components[-3], int(components[-1]), components
 
     def _is_tpu_chip(self, node_name):
         return TPUCHIP in node_name
