@@ -30,7 +30,7 @@ available_node_types:
         node_config:
             # Only v2-8 and v3-8 accelerator types are currently supported.
             # Support for TPU pods will be added in the future.
-            acceleratorType: v2-8
+            acceleratorType: v2-32
             runtimeVersion: v2-alpha
             schedulingConfig:
                 # Set to false to use non-preemptible TPUs
@@ -40,7 +40,7 @@ provider:
     type: gcp
     region: us-central1
     availability_zone: us-central1-b
-    project_id: null  # replace with your GCP project id
+    project_id: dmitri-test-300222 # Globally unique project id
 
 setup_commands: []
 

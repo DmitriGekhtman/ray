@@ -69,13 +69,6 @@ def get_node_type(node: dict) -> GCPNodeType:
         )
 
     if "machineType" not in node and "acceleratorType" in node:
-        # remove after TPU pod support is added!
-        if node["acceleratorType"] not in ("v2-8", "v3-8"):
-            raise ValueError(
-                "For now, only v2-8' and 'v3-8' accelerator types are "
-                "supported. Support for TPU pods will be added in the future."
-            )
-
         return GCPNodeType.TPU
     return GCPNodeType.COMPUTE
 
@@ -554,39 +547,47 @@ def _hack_in_tpu_chip_type(config: Dict[str, Any]) -> Dict[str, Any]:
     Also update TPU resources for the real instance type.
     """
     config = copy.deepcopy(config)
-    for node_type_name, node_type in config["available_node_types"]:
-        num_tpus = _num_tpus(node_type)
+    available_node_types = config["available_node_types"]
+    for node_type_name, node_type in copy.deepcopy(available_node_types).items():
+        num_tpus = num_tpus_from_node_config(node_type.get("node_config"), {})
         if num_tpus > 1:
-            tpu_chip_type_name, tpu_chip_type = _get_tpu_chip_type(node_type_name, node_type)
-            config[tpu_chip_type_name] = tpu_chip_type
+            tpu_chip_type_name, tpu_chip_type = _get_tpu_chip_type(
+                node_type_name, node_type
+            )
+            available_node_types[tpu_chip_type_name] = tpu_chip_type
     return config
 
 
-def _num_tpus(node_type: Dict[str, Any]) -> int:
+def num_tpus_from_node_config(node_type: Dict[str, Any]) -> int:
     """Get number of tpus for a tpu instance type.
 
     Return 0 if it's not a TPU type or parsing the number of TPUs failed.
     """
     node_config = node_type.get("node_config", {})
-    accelerator_type = node_config.get("acceleratorType")
-    if accelerator_type is None:
+    accelerator_type = node_config.get("acceleratorType", "")
+    return num_tpus_from_accelerator_type(accelerator_type)
+
+
+def num_tpus_from_accelerator_type(accelerator_type: str) -> int:
+    type_components = accelerator_type.split("-")
+    if not len(type_components) == 2:
         return 0
-    else:
-        version, suffix = accelerator_type.split("-")
-        if version.startswith("v") and suffix.isnumeric():
-            num_tpu, remainder = divmod(int(suffix), 8)
-            if remainder:
-                # Not divisible by 8, hmmmmm.
-                return 0
-            else:
-                return num_tpu
-        else:
+    version, suffix = accelerator_type.split("-")
+    if version.startswith("v") and suffix.isnumeric():
+        num_tpu, remainder = divmod(int(suffix), 8)
+        if remainder:
+            # Not divisible by 8, hmmmmm.
             return 0
+        else:
+            return num_tpu
+    else:
+        return 0
 
 
-def _get_tpu_chip_type(tpu_instance_type_name, tpu_node_type) -> Tuple[str, Dict[str, Any]]:
-    """Get a virtual type node type, used for autoscaler book-keeping.
-    """
+def _get_tpu_chip_type(
+    tpu_instance_type_name, tpu_node_type
+) -> Tuple[str, Dict[str, Any]]:
+    """Get a virtual type node type, used for autoscaler book-keeping."""
     tpu_chip_type_name = f"{tpu_instance_type_name}-chip"
     tpu_node_type = {
         # Prevent the autoscaler from trying to directly launch this node type.
@@ -595,7 +596,7 @@ def _get_tpu_chip_type(tpu_instance_type_name, tpu_node_type) -> Tuple[str, Dict
         "max_workers": 100000000000000,
         "resources": {"TPU": 1},
         # Not relevant, since we're using this node type for book-keeping, not node launching.
-        "node_config": {}
+        "node_config": {},
     }
     return tpu_chip_type_name, tpu_node_type
 
