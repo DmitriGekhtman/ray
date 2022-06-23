@@ -216,8 +216,12 @@ class GCPTPUNode(GCPNode):
             .get("externalIp", None)
         )
 
-    def get_internal_ip(self) -> str:
-        return self.get("networkEndpoints", [{}])[0].get("ipAddress", None)
+    def get_internal_ip(self, index=0) -> str:
+        network_interfaces = self.get("networkEndpoints", [{}])
+        if index < len(network_interfaces):
+            return self.get("networkEndpoints", [{}])[index].get("ipAddress")
+        else:
+            return None
 
 
 class GCPResource(metaclass=abc.ABCMeta):
