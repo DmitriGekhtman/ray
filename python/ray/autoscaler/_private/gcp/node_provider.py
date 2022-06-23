@@ -2,7 +2,7 @@ import logging
 import time
 from functools import wraps
 from threading import RLock
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import googleapiclient
 
@@ -195,7 +195,7 @@ class GCPNodeProvider(NodeProvider):
 
             return result
 
-    def external_ip(self, node_id: str) -> Optional[None]:
+    def external_ip(self, node_id: str) -> Optional[str]:
         # (Not necessary to add TPU host logic here.)
         with self.lock:
             node = self._get_cached_node(node_id)
@@ -204,7 +204,7 @@ class GCPNodeProvider(NodeProvider):
 
             return ip
 
-    def internal_ip(self, node_id: str) -> Optional[None]:
+    def internal_ip(self, node_id: str) -> Optional[str]:
         with self.lock:
             ip_index = 0
             if self._is_tpu_chip(node_id):
