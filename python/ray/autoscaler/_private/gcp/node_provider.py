@@ -134,9 +134,9 @@ class GCPNodeProvider(NodeProvider):
 
     def _name_and_tpu_index(self, suffixed_name) -> Tuple[str, int]:
         components = suffixed_name.strip("-")
-        assert components[1] == TPUCHIP
-        assert components[2].isnumeric()
-        return components[0], int(components[2])
+        assert components[-2] == TPUCHIP
+        assert components[-1].isnumeric()
+        return components[-3], int(components[-1])
 
     def _is_tpu_chip(self, node_name):
         return TPUCHIP in node_name
