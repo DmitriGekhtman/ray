@@ -55,7 +55,7 @@ head_node_type: ray_head_default
 head_setup_commands:
   # Two first lines are a workaround for ssh timing out
   - conda create -y -n "ray" python=3.8.5
-  - echo 'conda activate ray' >> ~/.bashrc
+  - conda activate ray || echo 'conda activate ray' >> ~/.bashrc
   - python -m pip install --upgrade pip
   - python -m pip install --upgrade "jax[cpu]==0.2.14"
   - python -m pip install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-3.0.0.dev0-cp38-cp38-manylinux2014_x86_64.whl
@@ -78,6 +78,7 @@ worker_setup_commands:
   - pip3 install tensorflow 
   - pip3 install flax 
   - pip3 install einops
+  - pip3 install Pillow moviepy proglog scikit-image
 
 head_start_ray_commands:
     - ray stop
@@ -88,3 +89,12 @@ head_start_ray_commands:
       --port=6379
       --object-manager-port=8076
       --autoscaling-config=~/ray_bootstrap_config.yaml
+
+# Command to start ray on worker nodes. You don't need to change this.
+worker_start_ray_commands:
+    - ray stop
+    - >-
+      ulimit -n 65536;
+      ray start
+      --address=$RAY_HEAD_IP:6379
+      --object-manager-port=8076
