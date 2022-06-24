@@ -206,12 +206,12 @@ class GCPNodeProvider(NodeProvider):
             return result
 
     def external_ip(self, node_id: str) -> Optional[str]:
-        # (Not necessary to add TPU host logic here.)
         with self.lock:
+            ip_index = 0
+            if self._is_tpu_chip(node_id):
+                node_id, ip_index = self._name_and_tpu_index(node_id)
             node = self._get_cached_node(node_id)
-
-            ip = node.get_external_ip()
-
+            ip = node.get_external_ip(ip_index)
             return ip
 
     def internal_ip(self, node_id: str) -> Optional[str]:

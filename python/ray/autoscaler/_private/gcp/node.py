@@ -159,7 +159,7 @@ class GCPNode(UserDict, metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def get_external_ip(self) -> str:
+    def get_external_ip(self, index: int = 0) -> str:
         return
 
     @abc.abstractmethod
@@ -209,12 +209,16 @@ class GCPTPUNode(GCPNode):
     def get_labels(self) -> dict:
         return self.get("labels", {})
 
-    def get_external_ip(self) -> str:
-        return (
-            self.get("networkEndpoints", [{}])[0]
-            .get("accessConfig", {})
-            .get("externalIp", None)
-        )
+    def get_external_ip(self, index=0) -> str:
+        network_interfaces = self.get("networkEndpoints", [{}])
+        if index < len(network_interfaces):
+            return (
+                self.get("networkEndpoints", [{}])[index]
+                .get("accessConfig", {})
+                .get("externalIp", None)
+            )
+        else:
+            return None
 
     def get_internal_ip(self, index=0) -> str:
         network_interfaces = self.get("networkEndpoints", [{}])
