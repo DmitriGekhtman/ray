@@ -2,7 +2,7 @@
 
 Using GPUs
 ==========
-This document provides some tips on GPU usage with Kubernetes.
+This document provides some tips on GPU usage with Ray on Kubernetes.
 
 To use GPUs on Kubernetes, you will need to configure both your Kubernetes setup and add additional values to your Ray cluster configuration.
 
