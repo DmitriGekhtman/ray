@@ -6,16 +6,18 @@ This document provides some tips on GPU usage with Ray on Kubernetes.
 
 To use GPUs on Kubernetes, you will need to configure both your Kubernetes setup and add additional values to your Ray cluster configuration.
 
-For relevant documentation for GPU usage on different clouds, see instructions for `GKE`_, for `EKS`_, and for `AKS`_.
+To learn about GPU usage on different clouds, see instructions for `GKE`_, for `EKS`_, and for `AKS`_.
 
 The `Ray Docker Hub <https://hub.docker.com/r/rayproject/>`_ hosts CUDA-based images packaged with Ray for use in Kubernetes pods.
 For example, the image ``rayproject/ray-ml:2.0.0-gpu`` is ideal for running GPU-based ML workloads with Ray 2.0.0.
 Read :ref:`here<docker-images>` for further details on Ray images.
 
-Using Nvidia GPUs requires specifying the relevant resource `limits` in the container fields of your Kubernetes configurations.
-(Kubernetes `sets <https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/#using-device-plugins>`_
-the GPU request equal to the limit; you may want to specify requests for purposes of documentation.)
-Here is a configurations snippet for a RayCluster workerGroup of up
+Using Nvidia GPUs requires specifying `nvidia.com/gpu` resource `limits` in the container fields of your `RayCluster`'s
+`headGroupSpec` and/or `workerGroupSpecs`.
+(Kubernetes `automatically sets <https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/#using-device-plugins>`_
+the GPU request equal to the limit. However, you might want to specify requests for purposes of documentation.)
+
+Here is a config snippet for a RayCluster workerGroup of up
 to 5 GPU workers.
 
 .. code-block:: yaml
@@ -40,23 +42,32 @@ to 5 GPU workers.
             cpu: 3
             memory: 50Gi
             nvidia.com/gpu: 1 # Required to use GPU.
+            ...
 
 Each of the Ray pods in the group can be scheduled on an AWS `p2.xlarge` instance (1 GPU, 4vCPU, 61Gi RAM).
-GPU instances are expensive -- consider setting up autoscaling for your GPU Ray workers, as suggested in the example above.
+
+.. tip::
+
+    GPU instances are expensive -- consider setting up autoscaling for your GPU Ray workers,
+    as demonstrated with the `minReplicas:0` and `maxReplicas:5` settings above.
+    To enable autoscaling, remember also to set `enableInTreeAutoscaling:True` in your RayCluster's `spec`
+    Finally, make sure your group or pool of GPU Kubernetes nodes are configured to autoscale.
 
 GPUs and Ray
 ____________
 
-GPU resources specified in a workerGroup's Ray container resource limits will be advertised to
-the Ray scheduler and Ray autoscaler. In particular, the Ray container's
-`ray start` entrypoint will be automatically configured with the `--num-gpus` option.
+The KubeRay operator advertises container GPU resource limits to
+the Ray scheduler and the Ray autoscaler. In particular, the Ray container's
+`ray start` entrypoint will be automatically configured with the appropriate `--num-gpus` option.
 
 * Learn more about Ray's :ref:`gpu-support`.
 
 GPU workload scheduling
 ~~~~~~~~~~~~~~~~~~~~~~~
 After a Ray pod with access to GPU is deployed, it will
-be able to execute tasks and actors decorated with `@ray.remote(num_gpus=1)`.
+be able to execute tasks and actors annotated with gpu requests.
+For example, the decorator `@ray.remote(num_gpus=1)` annotates a task or actor
+requiring 1 GPU.
 
 
 GPU autoscaling
@@ -68,59 +79,69 @@ Say we have a RayCluster configured as in the config snippet above:
 - `maxReplicas` for the group is at least 2
 
 Then the following Ray program will trigger upscaling of 2 GPU workers.
-```python
-import ray
 
-ray.init()
+.. code-block:: python
 
-@ray.remote(num_gpus=1)
-class GPUActor:
-    def say_hello(self):
-        print("I live in a pod with GPU access.")
+    import ray
 
-# Request actor placement.
-gpu_actors = [GPUActor.remote() for _ in range(2)]
-# The following command will block until two Ray pods with GPU access are scaled
-# up and the actors are placed.
-ray.get([actor.say_hello.remote() for actor in gpu_actors])
-```
+    ray.init()
+
+    @ray.remote(num_gpus=1)
+    class GPUActor:
+        def say_hello(self):
+            print("I live in a pod with GPU access.")
+
+    # Request actor placement.
+    gpu_actors = [GPUActor.remote() for _ in range(2)]
+    # The following command will block until two Ray pods with GPU access are scaled
+    # up and the actors are placed.
+    ray.get([actor.say_hello.remote() for actor in gpu_actors])
+
 After the program exits, the actors will be garbage collected.
-The GPU worker pods will then be scaled down after the idle timeout (60 seconds by default).
+The GPU worker pods will be scaled down after the idle timeout (60 seconds by default).
 If the GPU worker pods were running on an autoscaling pool of Kubernetes nodes, the Kubernetes
 nodes will be scaled down as well.
 
+Requesting GPUs
+~~~~~~~~~~~~~~~
 You can also make a :ref:`direct request to the autoscaler<ref-autoscaler-sdk-request-resources>` to scale up GPU resources.
-```python
-import ray
 
-ray.init()
-ray.autoscaler.sdk.request_resources(bundles=[{"GPU": 1} * 2])
-```
+.. code-block:: python
+
+    import ray
+
+    ray.init()
+    ray.autoscaler.sdk.request_resources(bundles=[{"GPU": 1} * 2])
+
 After the nodes are scaled up, they will persist until the request is explicitly overridden.
 The following program will remove the resource request.
-```python
-import ray
 
-ray.init()
-ray.autoscaler.sdk.request_resources(bundles=[])
-```
+.. code-block:: python
+
+    import ray
+
+    ray.init()
+    ray.autoscaler.sdk.request_resources(bundles=[])
+
 The GPU workers can then scale down.
 
 Overriding Ray GPU capacity (advanced)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-For specialized use-cases, it is possible to override the GPU capacity advertised to Ray.
+For specialized use-cases, it is possible to override the Ray pod GPU capacities advertised to Ray.
 To do so, set a value for the `num-gpus` key of the head or worker group's `rayStartParams`.
 For example,
-```yaml
+
+.. code-block:: yaml
+
     rayStartParams:
-        # Note that all rayStartParam values are strings.
+        # Note that all rayStartParam values must be supplied as strings.
         num-gpus: "2"
-```
+
 The Ray scheduler and autoscaler will then account 2 units of GPU capacity for each
 Ray pod in the group, even if the container limits do not indicate the presence of GPU.
 
 GPU pod scheduling (advanced)
------------------------------
+_____________________________
 
 GPU taints and tolerations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
