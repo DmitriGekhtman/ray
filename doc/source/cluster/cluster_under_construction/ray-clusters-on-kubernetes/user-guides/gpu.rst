@@ -48,18 +48,22 @@ GPUs and Ray
 ____________
 
 GPU resources specified in a workerGroup's Ray container resource limits will be advertised to
-the Ray scheduler and Ray autoscaler.
+the Ray scheduler and Ray autoscaler. In particular, the Ray container's
+`ray start` entrypoint will be automatically configured with the `--num-gpus` option.
+
+* Learn more about Ray's :ref:`gpu-support`.
 
 GPU workload scheduling
 ~~~~~~~~~~~~~~~~~~~~~~~
 After a Ray pod with access to GPU is deployed, it will
 be able to execute tasks and actors decorated with `@ray.remote(num_gpus=1)`.
 
+
 GPU autoscaling
 ~~~~~~~~~~~~~~~
 The Ray autoscaler is aware of each Ray worker group's GPU capacity.
-Say we have a RayCluster configured as above:
-- We have a worker group of Ray pods with 1 unit of GPU capacity each
+Say we have a RayCluster configured as in the config snippet above:
+- There is a worker group of Ray pods with 1 unit of GPU capacity each
 - The Ray cluster does not currently have any workers from that group
 - `maxReplicas` for the group is at least 2
 
@@ -74,17 +78,18 @@ class GPUActor:
     def say_hello(self):
         print("I live in a pod with GPU access.")
 
+# Request actor placement.
 gpu_actors = [GPUActor.remote() for _ in range(2)]
+# The following command will block until two Ray pods with GPU access are scaled
+# up and the actors are placed.
 ray.get([actor.say_hello.remote() for actor in gpu_actors])
 ```
 After the program exits, the actors will be garbage collected.
 The GPU worker pods will then be scaled down after the idle timeout (60 seconds by default).
 If the GPU worker pods were running on an autoscaling pool of Kubernetes nodes, the Kubernetes
 nodes will be scaled down as well.
-(link)
 
-You can also make a direct request to the autoscaler scale up GPU resources.
-(link)
+You can also make a :ref:`direct request to the autoscaler<ref-autoscaler-sdk-request-resources>` to scale up GPU resources.
 ```python
 import ray
 
@@ -108,16 +113,22 @@ To do so, set a value for the `num-gpus` key of the head or worker group's `rayS
 For example,
 ```yaml
     rayStartParams:
+        # Note that all rayStartParam values are strings.
         num-gpus: "2"
 ```
 The Ray scheduler and autoscaler will then account 2 units of GPU capacity for each
 Ray pod in the group, even if the container limits do not indicate the presence of GPU.
 
+GPU pod scheduling (advanced)
+-----------------------------
+
 GPU taints and tolerations
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. note::
 
-  Users using a managed Kubernetes service probably don't need to worry about this section.
+  Managed Kubernetes services typically take care of GPU-related taints and tolerations
+  for you. If you are using a managed Kubernetes service, you might not need to worry
+  about this section.
 
 The `Nvidia gpu plugin`_ for Kubernetes applies `taints`_ to GPU nodes; these taints prevent non-GPU pods from being scheduled on GPU nodes.
 Managed Kubernetes services like GKE, EKS, and AKS automatically apply matching `tolerations`_
@@ -142,6 +153,14 @@ If this admission controller is not enabled for your Kubernetes cluster, you may
      image: rayproject/ray:nightly-gpu
      ...
 
+Node selectors and node labels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To ensure Ray pods are bound to Kubernetes nodes satisfying specific
+conditions (such as presence of GPU hardware), you may wish to use
+the `nodeSelector` field of your `workerGroup`'s pod template `spec`.
+See the `Kubernetes docs`_ for more about Pod-to-Node assignment.
+
+
 Further reference and discussion
 --------------------------------
 Read about Kubernetes device plugins `here <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`__,
@@ -157,3 +176,4 @@ and about Nvidia's GPU plugin for Kubernetes `here <https://github.com/NVIDIA/k8
 .. _`Nvidia gpu plugin`: https://github.com/NVIDIA/k8s-device-plugin
 .. _`admission controller`: https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/
 .. _`ExtendedResourceToleration`: https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#extendedresourcetoleration
+.. _`Kubernetes docs`: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
