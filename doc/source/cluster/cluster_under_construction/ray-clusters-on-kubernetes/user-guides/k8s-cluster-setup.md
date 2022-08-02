@@ -2,7 +2,7 @@
 
 # Managed Kubernetes services
 
-We collect helpful links for users who are getting started with a managed Kubernetes service.
+We collect a few helpful links for users who are getting started with a managed Kubernetes service.
 
 :::{tabbed} GKE (Google Cloud)
 You can find the landing page for GKE [here](https://cloud.google.com/kubernetes-engine).
@@ -30,17 +30,3 @@ Alternatively, check out the [documentation](https://docs.microsoft.com/en-us/az
 you will need to configure pools of Kubernetes nodes;
 find guidance [here](https://docs.microsoft.com/en-us/azure/aks/use-multiple-node-pools).
 :::
-
-:::{warning}
-This page is under construction!
-:::
-
-Notes on how to set up Kubernetes infrastructure for Ray
-on the major cloud providers.
-Terraform configs could eventually be included here.
-
-## AWS
-
-## GCP
-
-## Azure
