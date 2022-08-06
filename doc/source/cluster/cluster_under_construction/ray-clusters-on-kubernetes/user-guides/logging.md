@@ -25,19 +25,19 @@ We mention two strategies for collecting logs written to a pod's filesystem,
 patterns in the [Kubernetes documentation][KubDoc].
 
 ### Sidecar containers
-We will provide an {ref}`example<kuberay-fluentbit>` of this strategy in this guide.
+We will provide an {ref}`example<kuberay-fluentbit>` of the sidecar strategy in this guide.
 You can process logs by specifying an appropriate log-processing **sidecar**
 for each Ray pod. Ray containers should be configured to share the `/tmp/ray`
 directory with the logging sidecar via a volume mount.
 
-You can configure the sidecar to either
+You can configure the sidecar to do either of the following:
 * stream Ray logs to the sidecar's STDOUT
 * export logs to an external service
 
 ### Daemonset
 Alternatively, it is possible to collect logs at the Kubernetes node level.
 To do this, one deploys a log-processing daemonset on a subset of
-the Kubernetes Nodes in your cluster. With this strategy, it is key to mount
+the Kubernetes nodes in your cluster. With this strategy, it is key to mount
 the Ray container's `/tmp/ray` directory to the appropriate `hostPath`.
 
 (kuberay-fluentbit)=
@@ -49,7 +49,7 @@ In this section, we give a concrete example of how to set up a log-emitting
 The first step is to create a ConfigMap with configuration
 for FluentBit.
 
-Here is a minimal ConfigMap for a Fluent sidecar which
+Here is a minimal ConfigMap for a Fluent Bit sidecar which
 * Tails Ray logs.
 * Outputs the logs to the container's STDOUT.
 ```yaml
@@ -113,6 +113,7 @@ The `fluentbit-config` volume gives the sidecar access to logging configuration.
 
 (kuberay-logging-tldr)=
 ## Putting everything together
+Now, we will see how to deploy the configuration described above.
 
 Deploy the KubeRay Operator if you haven't yet.
 ```shell
