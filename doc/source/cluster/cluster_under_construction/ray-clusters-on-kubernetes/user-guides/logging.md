@@ -11,8 +11,8 @@ for a sample configuration showing how to extract logs from a Ray pod.
 :::
 
 ## The Ray log directory
-Each Ray pod runs multiple processes.
-Ray processes log to files in the directory `/tmp/ray/session_latest/logs`.
+Each Ray pod runs several component processes, such as the Raylet, object manager, and dashboard agent.
+These components log to files in the directory `/tmp/ray/session_latest/logs` in the pod's file system.
 
 ## Log processing tools
 There are number of log processing tools available within the Kubernetes
