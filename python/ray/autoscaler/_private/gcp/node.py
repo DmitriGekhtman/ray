@@ -96,7 +96,14 @@ def _generate_node_name(labels: dict, node_suffix: str) -> str:
     The suffix is expected to be one of 'compute' or 'tpu'
     (as in ``GCPNodeType``).
     """
-    name_label = labels[TAG_RAY_NODE_NAME]
+    node_name_key = None
+    # Get one of the copies of the node name key if we're dealing with a TPU pod.
+    for key in labels:
+        if TAG_RAY_NODE_NAME in key:
+            node_name_key = key
+            break
+    assert node_name_key, "Couldn't get a node name key."
+    name_label = labels[node_name_key]
     assert len(name_label) <= (INSTANCE_NAME_MAX_LEN - INSTANCE_NAME_UUID_LEN - 1), (
         name_label,
         len(name_label),
@@ -156,7 +163,7 @@ class GCPNode(UserDict, metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def get_internal_ip(self) -> str:
+    def get_internal_ip(self, index: int = 0) -> str:
         return
 
     def __repr__(self) -> str:
@@ -180,8 +187,14 @@ class GCPComputeNode(GCPNode):
             .get("natIP", None)
         )
 
-    def get_internal_ip(self) -> str:
-        return self.get("networkInterfaces", [{}])[0].get("networkIP")
+    def get_internal_ip(self, index=0) -> str:
+        network_interfaces = self.get("networkInterfaces", [{}])
+        if index < len(network_interfaces):
+            return self.get("networkInterfaces", [{}])[index].get("networkIP")
+        else:
+            return None
+
+    # netWorkerEndpoints[*]["ipAddress"]
 
 
 class GCPTPUNode(GCPNode):
@@ -203,8 +216,12 @@ class GCPTPUNode(GCPNode):
             .get("externalIp", None)
         )
 
-    def get_internal_ip(self) -> str:
-        return self.get("networkEndpoints", [{}])[0].get("ipAddress", None)
+    def get_internal_ip(self, index=0) -> str:
+        network_interfaces = self.get("networkEndpoints", [{}])
+        if index < len(network_interfaces):
+            return self.get("networkEndpoints", [{}])[index].get("ipAddress")
+        else:
+            return None
 
 
 class GCPResource(metaclass=abc.ABCMeta):
